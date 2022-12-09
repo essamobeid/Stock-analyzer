@@ -10,27 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type StockPriceHistory struct {
-	yearChange          string
-	yearHigh            int
-	yearLow             int
-	fiftyDayMovingAvg   int
-	twoHundredMovingAvg int
-}
-
-type IncomeStatement struct {
-	revenue                 int
-	revenuePerShare         int
-	grossProfit             int
-	QuarterlyEarningsGrowth string
-}
-
-type BalanceSheet struct {
-	totalCash         int
-	totalDebt         int
-	bookValuePerShare int
-}
-
 type CashFlow struct {
 	operatingCashFlow   int
 	LeveredFreeCashFlow int
@@ -44,24 +23,38 @@ func main() {
 	}
 
 	symbol := flag.Args()[0]
-	summary := parseSummary(symbol)
+	summary := scrapeSummary(symbol)
+	fmt.Println("...Summary...")
 	fmt.Println("Company Name:", summary.name)
-	fmt.Println("Stock Price:", summary.ask)
-	fmt.Println("Market Cap:", summary.marketCap)
+	fmt.Printf("Stock Price: $%v\n", summary.ask)
+	fmt.Printf("Market Cap: $%v\n", summary.marketCap)
 	fmt.Println("PE Ration:", summary.peRation)
 	fmt.Println("Daily Volume:", summary.volume)
 	fmt.Println("Average Volume:", summary.avgVolume)
 	fmt.Println("Earnings Date:", summary.earningDate)
 
-}
+	stockPriceHistory := scrapePriceHistory(symbol)
+	fmt.Println("...Stock Price History...")
+	fmt.Printf("52-Week Change: $%v\n", stockPriceHistory.yearChange)
+	fmt.Printf("52-Week High: $%v\n", stockPriceHistory.yearHigh)
+	fmt.Printf("52-Week Low: $%v\n", stockPriceHistory.yearLow)
+	fmt.Printf("50-Day Moving Average: $%v\n", stockPriceHistory.fiftyDayMovingAvg)
+	fmt.Printf("200-Day Moving Average: $%v\n", stockPriceHistory.twoHundredMovingAvg)
 
-// func printData(data [][]string, headers []string) {
-// 	fmt.Println("Printing")
-// 	fmt.Println(headers)
-// 	for _, value := range data {
-// 		fmt.Println(value)
-// 	}
-// }
+	balanceSheet := ScrapeBalanceSheet(symbol)
+	fmt.Println("...Balance Sheet...")
+	fmt.Println("Total Cash:", balanceSheet.totalCash)
+	fmt.Println("Total Debt:", balanceSheet.totalDebt)
+	fmt.Printf("Book Value Per Share: $%v\n", balanceSheet.bookValuePerShare)
+
+	incomeStatement := scrapeIncomeStatement(symbol)
+	fmt.Println("...Income Statement...")
+	fmt.Println("Revenue (ttm):", incomeStatement.revenue)
+	fmt.Println("Revenue Per Share:", incomeStatement.revenuePerShare)
+	fmt.Println("Gross Profit:", incomeStatement.grossProfit)
+	fmt.Println("Quarterly Revenue Growth (yoy):", incomeStatement.quarterlyEarningsGrowth)
+
+}
 
 func parseStock(symbol string) {
 	c := colly.NewCollector(

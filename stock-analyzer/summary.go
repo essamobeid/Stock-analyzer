@@ -20,10 +20,15 @@ type Summary struct {
 	earningDate string
 }
 
-func parseSummary(symbol string) *Summary {
+func scrapeSummary(symbol string) *Summary {
 	var summary Summary
 	summaryPage, _ := quote.Get(symbol)
 	summary.name = summaryPage.ShortName
+	if summaryPage.Ask == 0 {
+		summary.ask = summaryPage.RegularMarketPreviousClose
+	} else {
+		summary.ask = summaryPage.Ask
+	}
 	summary.ask = summaryPage.Ask
 	summary.volume = float64(summaryPage.RegularMarketVolume)
 	summary.avgVolume = float64(summaryPage.AverageDailyVolume3Month)
